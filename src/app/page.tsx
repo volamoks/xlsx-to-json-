@@ -24,17 +24,6 @@ const Home: React.FC = () => {
         }
     };
 
-    const handleTextLoaded = async (text: string) => {
-        const result = await processData(text, 'text');
-        if ('error' in result) {
-            setError(result.error || null);
-            setKeycloakJson(null);
-        } else {
-            setError(null);
-            setKeycloakJson((result as { realm: string; users: KeycloakUserImport[] }) || null);
-        }
-    };
-
     return (
         <div className="container mx-auto p-4">
             <h1 className="text-2xl font-bold mb-4">XLSX/Text to Keycloak JSON Converter</h1>

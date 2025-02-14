@@ -30,7 +30,7 @@ export const parseXLSXData = (data: ArrayBuffer): Record<string, string>[] => {
     const workbook = XLSX.read(data, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
     const worksheet = workbook.Sheets[sheetName];
-    const rawData: any[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+    const rawData: unknown[][] = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
 
     const headers = [
         'username',
