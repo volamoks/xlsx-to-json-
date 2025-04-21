@@ -175,7 +175,7 @@ const convertToKeycloakJson = (
                 // and this import process doesn't support per-user optional actions.
                 // OTP can be configured by users within Keycloak after import.
                 realmRoles: item.role ? [item.role.trim()] : [],
-                groups: item.Group ? [item.Groupчё.trim()] : [],
+                groups: item.Group ? [item.Group.trim()] : [],
                 attributes: {
                     supplier: item.supplier?.trim() ? [item.supplier.trim()] : [],
                     tin: item.tin?.trim() ? [item.tin.trim()] : [],
