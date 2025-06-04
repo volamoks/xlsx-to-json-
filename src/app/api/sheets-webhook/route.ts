@@ -1,12 +1,13 @@
 import { NextResponse } from 'next/server';
 
 // Define a type for Keycloak user representation
-interface KeycloakUserRepresentation {
+export interface KeycloakUserRepresentation {
   username?: string;
   email?: string;
   firstName?: string;
   lastName?: string;
   enabled?: boolean;
+  id?: string; // Add id property
   attributes?: {
     [key: string]: string[] | undefined;
   };

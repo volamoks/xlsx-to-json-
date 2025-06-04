@@ -1,0 +1,240 @@
+{
+  "attributes": [
+    {
+      "name": "username",
+      "displayName": "${username}",
+      "validations": {
+        "length": {
+          "min": 3,
+          "max": 255
+        },
+        "username-prohibited-characters": {},
+        "up-username-not-idn-homograph": {}
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "multivalued": false
+    },
+    {
+      "name": "email",
+      "displayName": "${email}",
+      "validations": {
+        "email": {},
+        "length": {
+          "max": 255
+        }
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "multivalued": false
+    },
+    {
+      "name": "firstName",
+      "displayName": "${firstName}",
+      "validations": {
+        "length": {
+          "min": 2,
+          "max": 255
+        },
+        "person-name-prohibited-characters": {}
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "multivalued": false
+    },
+    {
+      "name": "lastName",
+      "displayName": "${lastName}",
+      "validations": {
+        "length": {
+          "min": 2,
+          "max": 255
+        },
+        "person-name-prohibited-characters": {}
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "multivalued": false
+    },
+    {
+      "name": "supplier",
+      "displayName": "${profile.attributes.supplier}",
+      "validations": {
+        "length": {
+          "min": 1,
+          "max": 255
+        },
+        "pattern": {
+          "pattern": "^[\\p{L}\\p{N}\\s\\-.,&()']+$",
+          "error": "${profile.attributes.supplier.pattern-error}"
+        }
+      },
+      "permissions": {
+        "view": [],
+        "edit": ["admin", "user"]
+      },
+      "group": "contractor_attributes",
+      "multivalued": false,
+      "annotations": {},
+      "required": {
+        "forContexts": ["registration", "updateProfile", "account-console"]
+      }
+    },
+    {
+      "name": "tin",
+      "displayName": "${profile.attributes.tin}",
+      "validations": {
+        "pattern": {
+          "pattern": "^\\d{9}$",
+          "error": "${profile.attributes.tin.pattern-error}"
+        }
+      },
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin", "user"]
+      },
+      "group": "contractor_attributes",
+      "multivalued": false,
+      "annotations": {},
+      "required": {
+        "forContexts": ["registration", "updateProfile", "account-console"]
+      }
+    },
+    {
+      "name": "notif_lang",
+      "displayName": "${profile.attributes.notif_lang}",
+      "validations": {},
+      "annotations": {},
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin"]
+      },
+      "group": "notif_attributes",
+      "multivalued": false
+    },
+    {
+      "name": "categories",
+      "displayName": "${profile.attributes.categories}",
+      "validations": {
+        "pattern": {
+          "pattern": "^\\d{3}$",
+          "error": "${profile.attributes.categories.pattern-error}"
+        }
+      },
+      "annotations": {},
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin", "user"]
+      },
+      "group": "contractor_attributes",
+      "multivalued": true
+    },
+    {
+      "name": "notif_teams_destin",
+      "displayName": "${profile.attributes.notif_teams_destin}",
+      "validations": {},
+      "annotations": {},
+      "permissions": {
+        "view": [],
+        "edit": ["admin"]
+      },
+      "group": "notif_attributes",
+      "multivalued": false
+    },
+    {
+      "name": "business_units",
+      "displayName": "${profile.attributes.business_units}",
+      "validations": {
+        "options": {
+          "options": ["1", "2", "3", "4"]
+        }
+      },
+      "annotations": {
+        "inputType": "select"
+      },
+      "permissions": {
+        "view": ["admin"],
+        "edit": ["admin"]
+      },
+      "group": "process_attributes",
+      "multivalued": true
+    },
+    {
+      "name": "notif_telegram_destin",
+      "displayName": "${profile.attributes.notif_telegram_destin}",
+      "validations": {
+        "pattern": {
+          "pattern": "^\\d{4,}$",
+          "error": "${profile.attributes.notif_telegram_destin.pattern-error}"
+        }
+      },
+      "permissions": {
+        "view": [],
+        "edit": ["admin", "user"]
+      },
+      "group": "contractor_attributes",
+      "multivalued": false,
+      "annotations": {},
+      "required": {
+        "forContexts": ["registration", "updateProfile", "account-console"]
+      }
+    },
+    {
+      "name": "phoneNumber",
+      "displayName": "${profile.attributes.phoneNumber}",
+      "validations": {
+        "pattern": {
+          "pattern": "^\\+998\\s?\\d{2}-\\d{3}-\\d{4}$",
+          "error": "${profile.attributes.phoneNumber.pattern-error}"
+        },
+        "length": {
+          "min": 12,
+          "max": 15
+        }
+      },
+      "permissions": {
+        "view": ["admin", "user"],
+        "edit": ["admin", "user"]
+      },
+      "group": "contractor_attributes",
+      "multivalued": false,
+      "annotations": {},
+      "required": {
+        "forContexts": ["registration", "updateProfile", "account-console"]
+      }
+    }
+  ],
+  "groups": [
+    {
+      "name": "user-metadata",
+      "displayHeader": "User metadata",
+      "displayDescription": "Attributes, which refer to user metadata"
+    },
+    {
+      "name": "process_attributes",
+      "displayHeader": "${profile.attribute-group.process_attributes}",
+      "displayDescription": "",
+      "annotations": {}
+    },
+    {
+      "name": "contractor_attributes",
+      "displayHeader": "${profile.attribute-group.contractor_attributes}",
+      "displayDescription": "",
+      "annotations": {}
+    },
+    {
+      "name": "notif_attributes",
+      "displayHeader": "${profile.attribute-group.notif_attributes}",
+      "displayDescription": "${profile.attribute-group-description.notif_attributes}",
+      "annotations": {}
+    }
+  ]
+}
