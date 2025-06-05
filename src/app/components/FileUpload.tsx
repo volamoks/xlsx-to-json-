@@ -1,14 +1,14 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 interface FileUploadProps {
     onFileLoaded: (data: ArrayBuffer) => void;
 }
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFileLoaded }) => {
+const FileUpload: React.FC<FileUploadProps> = ({}) => {
     // const handleFileChange = useCallback(
     //     (event: React.ChangeEvent<HTMLInputElement>) => {
     //         const file = event.target.files?.[0];
-    //         if (file) {
+    //         if (file) { 
     //             const reader = new FileReader();
     //             reader.onload = e => {
     //                 if (e.target?.result instanceof ArrayBuffer) {

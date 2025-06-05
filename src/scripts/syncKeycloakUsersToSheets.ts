@@ -192,11 +192,12 @@ async function syncKeycloakUsersToSheets() {
             }
             const rolesString = userRoles.join(', '); // Join roles into a string
 
-            // Fetch user sessions to get last login time
+            // Fetch last login time from user events
             let lastLoginTimestamp: number | undefined;
             try {
-                const sessionsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/users/${userId}/sessions`;
-                const sessionsResponse = await fetch(sessionsUrl, {
+                // Query for the most recent LOGIN event for the user
+                const eventsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/events?type=LOGIN&user=${userId}&max=1&first=0`;
+                const eventsResponse = await fetch(eventsUrl, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`,
@@ -204,20 +205,17 @@ async function syncKeycloakUsersToSheets() {
                     },
                 });
 
-                if (sessionsResponse.ok) {
-                    const sessionsData: Array<{ start: number }> = await sessionsResponse.json();
-                    if (sessionsData && sessionsData.length > 0) {
-                        // Find the session with the latest start time
-                        const latestSession = sessionsData.reduce((latest, current) => {
-                            return current.start > latest.start ? current : latest;
-                        });
-                        lastLoginTimestamp = latestSession.start;
+                if (eventsResponse.ok) {
+                    const eventsData: Array<{ time: number; type: string; userId?: string }> = await eventsResponse.json();
+                    if (eventsData && eventsData.length > 0) {
+                        // The first event (max=1) should be the latest LOGIN event
+                        lastLoginTimestamp = eventsData[0].time;
                     }
                 } else {
-                    console.warn(`Failed to fetch sessions for user ${userId}: ${sessionsResponse.status}`);
+                    console.warn(`Failed to fetch LOGIN events for user ${userId}: ${eventsResponse.status} ${await eventsResponse.text()}`);
                 }
-            } catch (sessionError) {
-                console.error(`Error fetching sessions for user ${userId}:`, sessionError);
+            } catch (eventError) {
+                console.error(`Error fetching LOGIN events for user ${userId}:`, eventError);
             }
 
             const baseRowData = [
