@@ -11,8 +11,9 @@ const Home: React.FC = () => {
     } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [logOutput, setLogOutput] = useState<string>('');
-    const [isExporting, setIsExporting] = useState<boolean>(false);
-    const [isImporting, setIsImporting] = useState<boolean>(false);
+    const [isExporting, setIsExporting] = useState<boolean>(false); // For Keycloak to Sheet
+    const [isImporting, setIsImporting] = useState<boolean>(false); // For Sheet to Keycloak
+    const [isExportingToGoogleSheet, setIsExportingToGoogleSheet] = useState<boolean>(false); // For DB to Google Sheet
 
     const handleFileLoaded = async (data: ArrayBuffer) => {
         // Ensure processData is called with the correct sourceType for client-side file processing
@@ -28,11 +29,12 @@ const Home: React.FC = () => {
 
     const handleStreamedOperation = async (
         apiEndpoint: string,
-        operationType: 'Export' | 'Import',
+        operationType: 'Export' | 'Import' | 'ExportToGoogleSheet',
     ) => {
         if (operationType === 'Export') setIsExporting(true);
         if (operationType === 'Import') setIsImporting(true);
-        setLogOutput(`Starting ${operationType.toLowerCase()}...\n`);
+        if (operationType === 'ExportToGoogleSheet') setIsExportingToGoogleSheet(true);
+        setLogOutput(`Starting ${operationType.toLowerCase().replace('togooglesheet', ' to Google Sheet')}...\n`);
 
         try {
             const response = await fetch(apiEndpoint, { method: 'POST' });
@@ -62,6 +64,7 @@ const Home: React.FC = () => {
         } finally {
             if (operationType === 'Export') setIsExporting(false);
             if (operationType === 'Import') setIsImporting(false);
+            if (operationType === 'ExportToGoogleSheet') setIsExportingToGoogleSheet(false);
         }
     };
 
@@ -108,6 +111,23 @@ const Home: React.FC = () => {
                         className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
                     >
                         {isImporting ? 'Importing...' : 'Import Users to KeyCloak'}
+                    </button>
+                </div>
+            </div>
+
+            <hr className="my-8" />
+
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-4">DB to Google Sheet Export</h2>
+                <div className="flex space-x-4 mt-4">
+                    <button
+                        onClick={() =>
+                            handleStreamedOperation('/api/export-to-google-sheet', 'ExportToGoogleSheet')
+                        }
+                        disabled={isExporting || isImporting || isExportingToGoogleSheet}
+                        className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                    >
+                        {isExportingToGoogleSheet ? 'Exporting to Google Sheet...' : 'Export DB to Google Sheet'}
                     </button>
                 </div>
             </div>

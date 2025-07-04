@@ -1,0 +1,33 @@
+{
+  "contentType": "application/vnd.microsoft.card.adaptive",
+  "content": {
+    "type": "AdaptiveCard",
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "version": "1.5",
+    "body": [
+      {
+        "type": "TextBlock",
+        "text": "Запрос на согласование New try",
+        "size": "Medium",
+        "weight": "Bolder"
+      },
+      {
+        "type": "FactSet",
+        "facts": [
+          {
+            "title": "Requested by",
+            "value": "Саидаброр Комалов <s.komalov@korzinka.uz>"
+          },
+          {
+            "title": "Date Created",
+            "value": "Monday, 9 June 2025 13:00"
+          },
+          {
+            "title": "Link",
+            "value": "New try"
+          }
+        ]
+      }
+    ]
+  }
+}

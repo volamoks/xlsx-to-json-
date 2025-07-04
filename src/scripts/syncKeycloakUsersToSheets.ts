@@ -166,10 +166,11 @@ async function syncKeycloakUsersToSheets() {
                 continue; // Skip user if ID is missing
             }
 
-            // Fetch role mappings for the user
+            // Fetch effective role mappings for the user to include inherited roles
             let userRoles: string[] = [];
             try {
-                const roleMappingsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/users/${userId}/role-mappings`;
+                // This endpoint returns all effective realm roles, including those inherited from composites.
+                const roleMappingsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/users/${userId}/role-mappings/realm/composite`;
                 const roleMappingsResponse = await fetch(roleMappingsUrl, {
                     method: 'GET',
                     headers: {
@@ -179,16 +180,16 @@ async function syncKeycloakUsersToSheets() {
                 });
 
                 if (roleMappingsResponse.ok) {
-                    const roleMappingsData = await roleMappingsResponse.json();
-                    // Extract realm roles (adjust if you need client roles)
-                    if (roleMappingsData.realmMappings) {
-                        userRoles = roleMappingsData.realmMappings.map((role: { name: string }) => role.name);
+                    const effectiveRoles = await roleMappingsResponse.json();
+                    // The response is an array of role representations
+                    if (Array.isArray(effectiveRoles)) {
+                        userRoles = effectiveRoles.map((role: { name: string }) => role.name);
                     }
                 } else {
-                    console.warn(`Failed to fetch roles for user ${userId}: ${roleMappingsResponse.status}`);
+                    console.warn(`Failed to fetch effective roles for user ${userId}: ${roleMappingsResponse.status}`);
                 }
             } catch (roleError) {
-                console.error(`Error fetching roles for user ${userId}:`, roleError);
+                console.error(`Error fetching effective roles for user ${userId}:`, roleError);
             }
             const rolesString = userRoles.join(', '); // Join roles into a string
 

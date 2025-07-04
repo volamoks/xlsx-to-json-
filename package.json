@@ -8,6 +8,7 @@
         "build": "next build",
         "start": "next start",
         "lint": "next lint",
+        "remove-default-master-role": "tsx src/scripts/removeDefaultMasterRole.ts",
         "sync-postgres": "node --loader ts-node/esm src/scripts/syncPostgresToSheets.ts",
         "sync-keycloak": "node --loader ts-node/esm src/scripts/syncKeycloakUsersToSheets.ts",
         "sync-users": "node --loader ts-node/esm src/scripts/syncUsers.ts",
@@ -15,7 +16,9 @@
         "import-users-from-sheet": "node --loader ts-node/esm src/scripts/importUsersFromKeycloakUserEditSheet.ts"
     },
     "dependencies": {
+        "@azure/identity": "^4.10.0",
         "@google-cloud/firestore": "^7.11.0",
+        "@microsoft/microsoft-graph-client": "^3.0.7",
         "@types/pg": "^8.15.1",
         "dotenv": "^16.4.7",
         "google-spreadsheet": "^4.1.4",
@@ -28,6 +31,7 @@
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3",
+        "@types/microsoft-graph": "^2.40.1",
         "@types/node": "^20.17.19",
         "@types/papaparse": "^5.3.15",
         "@types/react": "^19",
