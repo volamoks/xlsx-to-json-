@@ -84,5 +84,16 @@
         },
         "subject": "Новые позиции для проверки в категории #{categoryName}",
         "template": "category_manager_notification.html"
+    },
+    {
+        "id": "kam_notification",
+        "description": "Уведомление КАМ о необходимости доработки заявки (статус 5)",
+        "recipients": {
+            "to": ["s.komalov@korzinka.uz"],
+            "cc": [],
+            "bcc": []
+        },
+        "subject": "Заявка требует доработки - #{positionsCount} позиций",
+        "template": "kam_notification.html"
     }
 ]

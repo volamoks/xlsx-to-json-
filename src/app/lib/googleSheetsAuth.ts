@@ -77,6 +77,14 @@ interface RawSheetRow {
     folder_change_datetime?: unknown;
     folder_category_id?: unknown;
     folder_category_name?: unknown;
+    catman_fio?: unknown;
+    folder_creator_sub?: unknown;
+    kam_email?: unknown;
+    kam_fio?: unknown;
+    catman_email?: unknown;
+    catman_phone?: unknown;
+    kam_email_enriched?: unknown;
+    kam_fio_enriched?: unknown;
 }
 
 interface SheetRow {
@@ -112,6 +120,14 @@ interface SheetRow {
     folder_change_datetime?: string;
     folder_category_id?: string;
     folder_category_name?: string;
+    catman_fio?: string;
+    folder_creator_sub?: string;
+    kam_email?: string;
+    kam_fio?: string;
+    catman_email?: string;
+    catman_phone?: string;
+    kam_email_enriched?: string;
+    kam_fio_enriched?: string;
     _rowNumber: number; // Internal property to track row number
 }
 
@@ -224,6 +240,14 @@ function validateSheetRow(row: GoogleSpreadsheetRow<RawSheetRow>): SheetRow {
         folder_change_datetime: data.folder_change_datetime ? formatDateSafely(data.folder_change_datetime) : undefined,
         folder_category_id: data.folder_category_id ? String(data.folder_category_id) : undefined,
         folder_category_name: data.folder_category_name ? String(data.folder_category_name) : undefined,
+        catman_fio: data.catman_fio ? String(data.catman_fio) : undefined,
+        folder_creator_sub: data.folder_creator_sub ? String(data.folder_creator_sub) : undefined,
+        kam_email: data.kam_email ? String(data.kam_email) : undefined,
+        kam_fio: data.kam_fio ? String(data.kam_fio) : undefined,
+        catman_email: data.catman_email ? String(data.catman_email) : undefined,
+        catman_phone: data.catman_phone ? String(data.catman_phone) : undefined,
+        kam_email_enriched: data.kam_email_enriched ? String(data.kam_email_enriched) : undefined,
+        kam_fio_enriched: data.kam_fio_enriched ? String(data.kam_fio_enriched) : undefined,
         _rowNumber: row.rowNumber,
     };
 }

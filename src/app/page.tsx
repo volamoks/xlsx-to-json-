@@ -21,8 +21,11 @@ const Home: React.FC = () => {
     const [isTriggeringFlow, setIsTriggeringFlow] = useState<boolean>(false);
     const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
     const [selectedScenarioId, setSelectedScenarioId] = useState<string>(emailConfig[0]?.id || '');
-    const [isSendingCategoryNotification, setIsSendingCategoryNotification] = useState<boolean>(false);
+    const [isSendingCategoryNotification, setIsSendingCategoryNotification] =
+        useState<boolean>(false);
     const [categoryId, setCategoryId] = useState<string>('2');
+    const [isSendingKamNotification, setIsSendingKamNotification] = useState<boolean>(false);
+    const [kamCategoryId, setKamCategoryId] = useState<string>('2');
 
     const handleFileLoaded = async (data: ArrayBuffer) => {
         // Ensure processData is called with the correct sourceType for client-side file processing
@@ -43,7 +46,11 @@ const Home: React.FC = () => {
         if (operationType === 'Export') setIsExporting(true);
         if (operationType === 'Import') setIsImporting(true);
         if (operationType === 'ExportToGoogleSheet') setIsExportingToGoogleSheet(true);
-        setLogOutput(`Starting ${operationType.toLowerCase().replace('togooglesheet', ' to Google Sheet')}...\n`);
+        setLogOutput(
+            `Starting ${operationType
+                .toLowerCase()
+                .replace('togooglesheet', ' to Google Sheet')}...\n`,
+        );
 
         try {
             const response = await fetch(apiEndpoint, { method: 'POST' });
@@ -101,7 +108,9 @@ const Home: React.FC = () => {
             return;
         }
         setIsGeneratingExcel(true);
-        setLogOutput(prev => prev + `\nGenerating download link for Folder ID: ${excelFolderId}...\n`);
+        setLogOutput(
+            prev => prev + `\nGenerating download link for Folder ID: ${excelFolderId}...\n`,
+        );
         try {
             const response = await fetch('/api/generate-excel', {
                 method: 'POST',
@@ -146,7 +155,9 @@ const Home: React.FC = () => {
         }
         setIsSendingEmail(true);
         const scenario = emailConfig.find(s => s.id === scenarioId);
-        setLogOutput(prev => prev + `\nSending email for scenario: "${scenario?.description}"...\n`);
+        setLogOutput(
+            prev => prev + `\nSending email for scenario: "${scenario?.description}"...\n`,
+        );
         try {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
@@ -168,15 +179,18 @@ const Home: React.FC = () => {
 
     const handleSendCategoryNotification = async (categoryId: string) => {
         setIsSendingCategoryNotification(true);
-        setLogOutput(prev => prev + `\nSending category manager notification for category ${categoryId}...\n`);
-        
+        setLogOutput(
+            prev =>
+                prev + `\nSending category manager notification for category ${categoryId}...\n`,
+        );
+
         try {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     scenarioId: 'category_manager_notification',
-                    categoryId: parseInt(categoryId, 10)
+                    categoryId: parseInt(categoryId, 10),
                 }),
             });
             const result = await response.json();
@@ -188,8 +202,34 @@ const Home: React.FC = () => {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
             setLogOutput(prev => prev + `ERROR: ${message}\n`);
         }
-        
+
         setIsSendingCategoryNotification(false);
+    };
+
+    const handleSendKamNotification = async (categoryId: string) => {
+        setIsSendingKamNotification(true);
+        setLogOutput(prev => prev + `\nSending KAM notification for category ${categoryId}...\n`);
+
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scenarioId: 'kam_notification',
+                    categoryId: parseInt(categoryId, 10),
+                }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP error! status: ${response.status}`);
+            }
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : 'An unknown error occurred.';
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
+        }
+
+        setIsSendingKamNotification(false);
     };
 
     return (
@@ -210,12 +250,12 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Google Sheet Operations</h2>
-                {logOutput &&
+                {logOutput && (
                     <div className="mt-4 p-4 bg-gray-100 border border-gray-300 rounded max-h-96 overflow-y-auto">
                         <h3 className="text-lg font-medium mb-2">Operation Log:</h3>
                         <pre className="text-sm whitespace-pre-wrap">{logOutput}</pre>
                     </div>
-                }
+                )}
                 <div className="flex space-x-4 mt-4">
                     <button
                         onClick={() =>
@@ -242,13 +282,20 @@ const Home: React.FC = () => {
             <hr className="my-8" />
 
             <div className="mt-8">
-                <h2 className="text-xl font-semibold mb-4">DB to Google Sheet Export & Flow Trigger</h2>
+                <h2 className="text-xl font-semibold mb-4">
+                    DB to Google Sheet Export & Flow Trigger
+                </h2>
                 <div className="flex space-x-4 mt-4">
                     <button
                         onClick={() =>
                             handleStreamedOperation('/api/export-sheet', 'ExportToGoogleSheet')
                         }
-                        disabled={isExporting || isImporting || isExportingToGoogleSheet || isCheckingSheet}
+                        disabled={
+                            isExporting ||
+                            isImporting ||
+                            isExportingToGoogleSheet ||
+                            isCheckingSheet
+                        }
                         className="bg-teal-500 hover:bg-teal-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
                     >
                         {isExportingToGoogleSheet ? 'Exporting...' : '1. Export DB to Google Sheet'}
@@ -271,7 +318,7 @@ const Home: React.FC = () => {
                     <input
                         type="text"
                         value={excelFolderId}
-                        onChange={(e) => setExcelFolderId(e.target.value)}
+                        onChange={e => setExcelFolderId(e.target.value)}
                         placeholder="Enter Folder ID"
                         className="border border-gray-300 rounded px-3 py-2"
                     />
@@ -307,11 +354,14 @@ const Home: React.FC = () => {
                 <div className="flex items-center space-x-4 mt-4">
                     <select
                         value={selectedScenarioId}
-                        onChange={(e) => setSelectedScenarioId(e.target.value)}
+                        onChange={e => setSelectedScenarioId(e.target.value)}
                         className="border border-gray-300 rounded px-3 py-2"
                     >
-                        {emailConfig.map((scenario) => (
-                            <option key={scenario.id} value={scenario.id}>
+                        {emailConfig.map(scenario => (
+                            <option
+                                key={scenario.id}
+                                value={scenario.id}
+                            >
                                 {scenario.description}
                             </option>
                         ))}
@@ -350,7 +400,7 @@ const Home: React.FC = () => {
                 <div className="flex items-center space-x-4 mt-4">
                     <select
                         value={categoryId}
-                        onChange={(e) => setCategoryId(e.target.value)}
+                        onChange={e => setCategoryId(e.target.value)}
                         className="border border-gray-300 rounded px-3 py-2"
                         disabled={isSendingCategoryNotification}
                     >
@@ -378,14 +428,34 @@ const Home: React.FC = () => {
                                 const response = await fetch('/api/debug-sheets');
                                 const result = await response.json();
                                 if (response.ok) {
-                                    setLogOutput(prev => prev + `Available sheets: ${result.availableSheets.join(', ')}\n`);
-                                    setLogOutput(prev => prev + `Environment sheet name: ${result.environmentSheetName}\n`);
-                                    setLogOutput(prev => prev + `Spreadsheet title: ${result.spreadsheetInfo.title}\n`);
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Available sheets: ${result.availableSheets.join(
+                                                ', ',
+                                            )}\n`,
+                                    );
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Environment sheet name: ${result.environmentSheetName}\n`,
+                                    );
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Spreadsheet title: ${result.spreadsheetInfo.title}\n`,
+                                    );
                                 } else {
                                     setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                 }
                             } catch (error) {
-                                setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
+                                setLogOutput(
+                                    prev =>
+                                        prev +
+                                        `ERROR: ${
+                                            error instanceof Error ? error.message : 'Unknown error'
+                                        }\n`,
+                                );
                             }
                         }}
                         className="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded"
@@ -399,21 +469,64 @@ const Home: React.FC = () => {
                                 const response = await fetch('/api/debug-sheet-data');
                                 const result = await response.json();
                                 if (response.ok) {
-                                    setLogOutput(prev => prev + `Sheet: ${result.sheetName}, Total rows: ${result.totalRows}\n`);
-                                    setLogOutput(prev => prev + `Available statuses: ${result.summary.availableStatuses.join(', ')}\n`);
-                                    setLogOutput(prev => prev + `Available categories: ${result.summary.availableCategories.join(', ')}\n`);
-                                    setLogOutput(prev => prev + `Status 2 count: ${result.summary.status2Count}\n`);
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Sheet: ${result.sheetName}, Total rows: ${result.totalRows}\n`,
+                                    );
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Available statuses: ${result.summary.availableStatuses.join(
+                                                ', ',
+                                            )}\n`,
+                                    );
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Available categories: ${result.summary.availableCategories.join(
+                                                ', ',
+                                            )}\n`,
+                                    );
+                                    setLogOutput(
+                                        prev =>
+                                            prev +
+                                            `Status 2 count: ${result.summary.status2Count}\n`,
+                                    );
                                     if (result.status2Data.length > 0) {
                                         setLogOutput(prev => prev + `Status 2 samples:\n`);
-                                        result.status2Data.forEach((item: { folder_category_id: string; folder_category_name: string; name_by_doc: string }, index: number) => {
-                                            setLogOutput(prev => prev + `${index + 1}. Category ${item.folder_category_id} (${item.folder_category_name}): ${item.name_by_doc}\n`);
-                                        });
+                                        result.status2Data.forEach(
+                                            (
+                                                item: {
+                                                    folder_category_id: string;
+                                                    folder_category_name: string;
+                                                    name_by_doc: string;
+                                                },
+                                                index: number,
+                                            ) => {
+                                                setLogOutput(
+                                                    prev =>
+                                                        prev +
+                                                        `${index + 1}. Category ${
+                                                            item.folder_category_id
+                                                        } (${item.folder_category_name}): ${
+                                                            item.name_by_doc
+                                                        }\n`,
+                                                );
+                                            },
+                                        );
                                     }
                                 } else {
                                     setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                 }
                             } catch (error) {
-                                setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
+                                setLogOutput(
+                                    prev =>
+                                        prev +
+                                        `ERROR: ${
+                                            error instanceof Error ? error.message : 'Unknown error'
+                                        }\n`,
+                                );
                             }
                         }}
                         className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded"
@@ -424,27 +537,131 @@ const Home: React.FC = () => {
                         onClick={async () => {
                             setLogOutput(prev => prev + '\nChecking email logs...\n');
                             try {
-                                const response = await fetch('/api/email-logs?scenario=category_manager_notification');
+                                const response = await fetch(
+                                    '/api/email-logs?scenario=category_manager_notification',
+                                );
                                 const result = await response.json();
                                 if (response.ok) {
-                                    setLogOutput(prev => prev + `Email logs found: ${result.count}\n`);
+                                    setLogOutput(
+                                        prev => prev + `Email logs found: ${result.count}\n`,
+                                    );
                                     if (result.logs.length > 0) {
-                                        result.logs.forEach((log: { date: string; recipient: string; request_ids: string[] }, index: number) => {
-                                            setLogOutput(prev => prev + `${index + 1}. ${log.date}: ${log.recipient} (${log.request_ids.length} positions)\n`);
-                                        });
+                                        result.logs.forEach(
+                                            (
+                                                log: {
+                                                    date: string;
+                                                    recipient: string;
+                                                    request_ids: string[];
+                                                },
+                                                index: number,
+                                            ) => {
+                                                setLogOutput(
+                                                    prev =>
+                                                        prev +
+                                                        `${index + 1}. ${log.date}: ${
+                                                            log.recipient
+                                                        } (${log.request_ids.length} positions)\n`,
+                                                );
+                                            },
+                                        );
                                     } else {
-                                        setLogOutput(prev => prev + 'No category manager emails sent yet\n');
+                                        setLogOutput(
+                                            prev => prev + 'No category manager emails sent yet\n',
+                                        );
                                     }
                                 } else {
                                     setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                 }
                             } catch (error) {
-                                setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
+                                setLogOutput(
+                                    prev =>
+                                        prev +
+                                        `ERROR: ${
+                                            error instanceof Error ? error.message : 'Unknown error'
+                                        }\n`,
+                                );
                             }
                         }}
                         className="bg-violet-500 hover:bg-violet-700 text-white font-bold py-2 px-4 rounded"
                     >
                         История писем КМ
+                    </button>
+                </div>
+            </div>
+
+            <hr className="my-8" />
+
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold mb-4">KAM Notifications</h2>
+                <p className="text-sm text-gray-600 mb-4">
+                    Отправить уведомления КАМ о позициях со статусом 5 (требует доработки)
+                </p>
+                <div className="flex items-center space-x-4 mt-4">
+                    <input
+                        type="text"
+                        value={kamCategoryId}
+                        onChange={e => setKamCategoryId(e.target.value)}
+                        placeholder="Введите номер категории"
+                        className="border border-gray-300 rounded px-3 py-2"
+                        disabled={isSendingKamNotification}
+                    />
+                    <button
+                        onClick={() => handleSendKamNotification(kamCategoryId)}
+                        disabled={isSendingKamNotification}
+                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded disabled:opacity-50"
+                    >
+                        {isSendingKamNotification ? 'Отправка...' : 'Отправить КАМ'}
+                    </button>
+                    <button
+                        onClick={async () => {
+                            setLogOutput(prev => prev + '\nChecking KAM email logs...\n');
+                            try {
+                                const response = await fetch(
+                                    '/api/email-logs?scenario=kam_notification',
+                                );
+                                const result = await response.json();
+                                if (response.ok) {
+                                    setLogOutput(
+                                        prev => prev + `KAM email logs found: ${result.count}\n`,
+                                    );
+                                    if (result.logs.length > 0) {
+                                        result.logs.forEach(
+                                            (
+                                                log: {
+                                                    date: string;
+                                                    recipient: string;
+                                                    request_ids: string[];
+                                                },
+                                                index: number,
+                                            ) => {
+                                                setLogOutput(
+                                                    prev =>
+                                                        prev +
+                                                        `${index + 1}. ${log.date}: ${
+                                                            log.recipient
+                                                        } (${log.request_ids.length} positions)\n`,
+                                                );
+                                            },
+                                        );
+                                    } else {
+                                        setLogOutput(prev => prev + 'No KAM emails sent yet\n');
+                                    }
+                                } else {
+                                    setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
+                                }
+                            } catch (error) {
+                                setLogOutput(
+                                    prev =>
+                                        prev +
+                                        `ERROR: ${
+                                            error instanceof Error ? error.message : 'Unknown error'
+                                        }\n`,
+                                );
+                            }
+                        }}
+                        className="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded"
+                    >
+                        История писем КАМ
                     </button>
                 </div>
             </div>
