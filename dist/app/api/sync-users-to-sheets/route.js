@@ -1,10 +1,7 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.GET = GET;
-const server_1 = require("next/server");
-const googleapis_1 = require("googleapis");
-const google_auth_library_1 = require("google-auth-library");
-async function GET() {
+import { NextResponse } from 'next/server';
+import { google } from 'googleapis';
+import { JWT } from 'google-auth-library';
+export async function GET() {
     var _a, _b;
     const keycloakUrl = process.env.KEYCLOAK_URL;
     const keycloakRealm = 'cde'; // Use 'cde' realm as requested
@@ -15,10 +12,10 @@ async function GET() {
     const googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
     const googlePrivateKey = process.env.GOOGLE_PRIVATE_KEY;
     if (!keycloakUrl || !keycloakRealm || !keycloakAdminUser || !keycloakAdminPassword) {
-        return server_1.NextResponse.json({ message: 'Missing Keycloak environment variables' }, { status: 400 });
+        return NextResponse.json({ message: 'Missing Keycloak environment variables' }, { status: 400 });
     }
     if (!googleSpreadsheetId || !googleSheetGid || !googleServiceAccountEmail || !googlePrivateKey) {
-        return server_1.NextResponse.json({ message: 'Missing Google Sheets environment variables' }, { status: 400 });
+        return NextResponse.json({ message: 'Missing Google Sheets environment variables' }, { status: 400 });
     }
     const masterRealm = process.env.KEYCLOAK_REALM || 'master'; // Get master realm from env or default
     const tokenUrl = `${keycloakUrl}/realms/${masterRealm}/protocol/openid-connect/token`; // Get token from master realm
@@ -38,7 +35,7 @@ async function GET() {
         });
         if (!tokenResponse.ok) {
             const errorData = await tokenResponse.text();
-            return server_1.NextResponse.json({ message: 'Failed to obtain Keycloak admin token', status: tokenResponse.status, statusText: tokenResponse.statusText, error: errorData }, { status: tokenResponse.status });
+            return NextResponse.json({ message: 'Failed to obtain Keycloak admin token', status: tokenResponse.status, statusText: tokenResponse.statusText, error: errorData }, { status: tokenResponse.status });
         }
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
@@ -54,23 +51,23 @@ async function GET() {
         });
         if (!usersResponse.ok) {
             const errorData = await usersResponse.text();
-            return server_1.NextResponse.json({ message: 'Failed to fetch Keycloak users', status: usersResponse.status, statusText: usersResponse.statusText, error: errorData }, { status: usersResponse.status });
+            return NextResponse.json({ message: 'Failed to fetch Keycloak users', status: usersResponse.status, statusText: usersResponse.statusText, error: errorData }, { status: usersResponse.status });
         }
         const usersData = await usersResponse.json();
         // Initialize Google Sheets client using googleapis
-        const auth = new google_auth_library_1.JWT({
+        const auth = new JWT({
             email: googleServiceAccountEmail,
             key: googlePrivateKey.replace(/\\n/g, '\n'), // Replace escaped newlines
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
-        const sheets = googleapis_1.google.sheets({ version: 'v4', auth });
+        const sheets = google.sheets({ version: 'v4', auth });
         // Get sheet name from GID (requires fetching spreadsheet details)
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: googleSpreadsheetId,
         });
         const sheet = (_a = spreadsheet.data.sheets) === null || _a === void 0 ? void 0 : _a.find(s => { var _a; return ((_a = s.properties) === null || _a === void 0 ? void 0 : _a.sheetId) === googleSheetGid; });
         if (!sheet || !((_b = sheet.properties) === null || _b === void 0 ? void 0 : _b.title)) {
-            return server_1.NextResponse.json({ message: `Sheet with GID ${googleSheetGid} not found` }, { status: 404 });
+            return NextResponse.json({ message: `Sheet with GID ${googleSheetGid} not found` }, { status: 404 });
         }
         const sheetTitle = sheet.properties.title;
         const range = `${sheetTitle}!A:ZZ`; // Define a broad range to clear and append
@@ -133,10 +130,10 @@ async function GET() {
                 },
             });
         }
-        return server_1.NextResponse.json({ message: 'Keycloak users successfully synced to Google Sheet' });
+        return NextResponse.json({ message: 'Keycloak users successfully synced to Google Sheet' });
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-        return server_1.NextResponse.json({ message: 'An error occurred while trying to sync users to Google Sheets', error: errorMessage }, { status: 500 });
+        return NextResponse.json({ message: 'An error occurred while trying to sync users to Google Sheets', error: errorMessage }, { status: 500 });
     }
 }

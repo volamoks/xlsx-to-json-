@@ -34,6 +34,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 config({ path: path.resolve(__dirname, '../../.env') });
 
+
 const keycloakUrl = process.env.KEYCLOAK_URL;
 const keycloakAdminUser = process.env.PROD_KEYCLOAK_ADMIN_USER;
 const keycloakAdminPassword = process.env.PROD_KEYCLOAK_ADMIN_PASSWORD;
@@ -134,7 +135,7 @@ async function exportKeycloakUsersToSheet() {
         const rowsToWrite: (string | number | boolean)[][] = [];
         const headers = [
             'Keycloak ID', 'Username', 'Email', 'First Name', 'Last Name',
-            'Enabled', 'Email Verified', 'Created Timestamp', 'Last Login',
+            'Enabled', 'Email Verified', 'Created Timestamp', 'Last Login', 'ICPU Code', 'Mxik Name', 'Package Name',
             'Roles', // Consolidated roles
             'TIN', 'Supplier', 'Phone Number', 'Categories', // Consolidated categories
             'Business Units', // Consolidated business units
@@ -277,7 +278,7 @@ async function exportKeycloakUsersToSheet() {
             await sheets.spreadsheets.values.update({
                 spreadsheetId: googleSpreadsheetId,
                 range: `${targetSheetName}!A1`,
-                valueInputOption: 'USER_ENTERED', // Or 'RAW', USER_ENTERED tries to interpret types
+                valueInputOption: 'RAW', // Or 'RAW', USER_ENTERED tries to interpret types
                 requestBody: {
                     values: rowsToWrite,
                 },

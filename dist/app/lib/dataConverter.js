@@ -1,45 +1,7 @@
-"use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.processData = exports.parseXLSXData = void 0;
-const XLSX = __importStar(require("xlsx"));
-const papaparse_1 = __importDefault(require("papaparse"));
-const parseXLSXData = (data) => {
+import * as XLSX from 'xlsx';
+import Papa from 'papaparse';
+import { queryPostgres } from './postgresClient';
+export const parseXLSXData = (data) => {
     if (!data || data.byteLength === 0) {
         throw new Error('Invalid XLSX data: Empty buffer');
     }
@@ -81,16 +43,15 @@ const parseXLSXData = (data) => {
         return item;
     });
 };
-exports.parseXLSXData = parseXLSXData;
-const processData = async (data, sourceType) => {
+export const processData = async (data, sourceType) => {
     try {
         if (sourceType === 'file') {
-            const jsonData = (0, exports.parseXLSXData)(data);
+            const jsonData = parseXLSXData(data);
             const keycloakJson = convertToKeycloakJson(jsonData);
             return keycloakJson;
         }
-        else {
-            const parseResult = papaparse_1.default.parse(data, {
+        else if (sourceType === 'text') {
+            const parseResult = Papa.parse(data, {
                 header: true,
                 delimiter: '\t',
                 quoteChar: '"',
@@ -115,6 +76,18 @@ const processData = async (data, sourceType) => {
             const keycloakJson = convertToKeycloakJson(filteredData);
             return keycloakJson;
         }
+        else if (sourceType === 'postgres') {
+            try {
+                const { sql } = data;
+                const postgresData = await queryPostgres(sql);
+                const keycloakJson = convertPostgresToKeycloak(postgresData);
+                return keycloakJson;
+            }
+            catch (error) {
+                const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+                return { error: `PostgreSQL query error: ${errorMessage}` };
+            }
+        }
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -122,7 +95,6 @@ const processData = async (data, sourceType) => {
         return { error: `Data processing error: ${errorMessage}` };
     }
 };
-exports.processData = processData;
 const convertToKeycloakJson = (data) => {
     const usersMap = new Map();
     data.forEach((item) => {
@@ -191,5 +163,38 @@ const convertToKeycloakJson = (data) => {
     return {
         realm: "cde",
         users: Array.from(usersMap.values()),
+    };
+};
+const convertPostgresToKeycloak = (data) => {
+    const users = data.map(row => ({
+        username: String(row.username || row.email || ''),
+        createdTimestamp: Date.now(),
+        enabled: true,
+        emailVerified: true,
+        email: String(row.email || ''),
+        firstName: String(row.first_name || row.firstName || ''),
+        lastName: String(row.last_name || row.lastName || ''),
+        credentials: [
+            {
+                type: 'password',
+                value: 'password123',
+                temporary: true,
+            },
+        ],
+        requiredActions: ["UPDATE_PASSWORD"],
+        realmRoles: [],
+        groups: [],
+        attributes: {
+            supplier: row.supplier ? [String(row.supplier)] : [],
+            tin: row.tin ? [String(row.tin)] : [],
+            notif_teams_destin: [],
+            notif_lang: ['1'],
+            categories: row.categories ? String(row.categories).split(',').map(c => c.trim()) : [],
+            notif_telegram_destin: row.telegram_id ? [String(row.telegram_id)] : [],
+        },
+    }));
+    return {
+        realm: "cde",
+        users: users.filter(u => u.username && u.email),
     };
 };

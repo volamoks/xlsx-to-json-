@@ -1,0 +1,56 @@
+{
+    "success": true,
+    "code": 0,
+    "reason": "ok",
+    "data": {
+        "content": [
+            {
+                "text": null,
+                "lang": "uz",
+                "page": 0,
+                "size": 20,
+                "mxikCode": "02202004001004020",
+                "groupName": "АЛКОГОЛЬНЫЕ И БЕЗАЛКОГОЛЬНЫЕ НАПИТКИ И УКСУС",
+                "groupCode": "022",
+                "className": "Воды и прочие безалкогольные напитки, содержащие разные вкусовые добавки",
+                "classCode": "02202",
+                "positionName": "Прочие безалкогольные напитки",
+                "positionCode": "02202004",
+                "subPositionName": "Холодный кофе",
+                "subPositionCode": "02202004001",
+                "brandName": "STARBUCKS",
+                "brandCode": "02202004001004",
+                "mxikName": "Холодный кофе: STARBUCKS, ФРАППУЧЧИНО  пэт бутилка 0.25 л",
+                "attributeName": "ФРАППУЧЧИНО  пэт бутилка 0.25 л",
+                "unitCode": null,
+                "unitName": null,
+                "commonUnitCode": null,
+                "commonUnitName": null,
+                "internationalCode": "5711953024290",
+                "label": 1,
+                "units": [],
+                "myProduct": 0,
+                "packages": null,
+                "download": false
+            }
+        ],
+        "pageable": {
+            "sort": { "unsorted": true, "sorted": false, "empty": true },
+            "pageNumber": 0,
+            "pageSize": 15,
+            "offset": 0,
+            "paged": true,
+            "unpaged": false
+        },
+        "last": true,
+        "totalElements": 1,
+        "totalPages": 1,
+        "sort": { "unsorted": true, "sorted": false, "empty": true },
+        "first": true,
+        "numberOfElements": 1,
+        "size": 15,
+        "number": 0,
+        "empty": false
+    },
+    "errors": null
+}

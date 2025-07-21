@@ -1,7 +1,7 @@
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { KeycloakUserRepresentation } from '../app/api/sheets-webhook/route';
+import { KeycloakUserRepresentation } from '@/lib/interfaces/KeycloakUser';
 
 // Define __filename and __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);

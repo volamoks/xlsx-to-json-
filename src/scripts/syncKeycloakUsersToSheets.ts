@@ -192,6 +192,7 @@ async function syncKeycloakUsersToSheets() {
                 console.error(`Error fetching effective roles for user ${userId}:`, roleError);
             }
             const rolesString = userRoles.join(', '); // Join roles into a string
+            console.log(`DEBUG: User ${userId} has roles: ${rolesString || 'NONE'}`);
 
             // Fetch last login time from user events
             let lastLoginTimestamp: number | undefined;
@@ -325,4 +326,9 @@ async function syncKeycloakUsersToSheets() {
     }
 }
 
-syncKeycloakUsersToSheets();
+// Execute main only if the script is run directly from the command line
+if (require.main === module) {
+    syncKeycloakUsersToSheets();
+}
+
+export { syncKeycloakUsersToSheets };

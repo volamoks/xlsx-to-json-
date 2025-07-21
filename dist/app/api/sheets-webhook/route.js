@@ -1,14 +1,11 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.POST = POST;
-const server_1 = require("next/server");
-async function POST(request) {
+import { NextResponse } from 'next/server';
+export async function POST(request) {
     const keycloakUrl = process.env.KEYCLOAK_URL;
     const keycloakAdminUser = process.env.KEYCLOAK_ADMIN_USER;
     const keycloakAdminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD;
     const targetRealm = 'cde'; // The realm where users will be created
     if (!keycloakUrl || !keycloakAdminUser || !keycloakAdminPassword) {
-        return server_1.NextResponse.json({ message: 'Missing Keycloak admin environment variables' }, { status: 400 });
+        return NextResponse.json({ message: 'Missing Keycloak admin environment variables' }, { status: 400 });
     }
     try {
         const sheetData = await request.json(); // Assuming data from Google Sheets trigger is in JSON format
@@ -23,7 +20,7 @@ async function POST(request) {
         const username = emailAddress;
         const email = emailAddress;
         if (!username || !email || !firstName || !lastName) {
-            return server_1.NextResponse.json({ message: 'Missing required user data in sheet data (Email Address, Имя, Фамилия)' }, { status: 400 });
+            return NextResponse.json({ message: 'Missing required user data in sheet data (Email Address, Имя, Фамилия)' }, { status: 400 });
         }
         // Obtain admin token (similar logic from create-cde-user route)
         const tokenUrl = `${keycloakUrl}/realms/master/protocol/openid-connect/token`;
@@ -41,7 +38,7 @@ async function POST(request) {
         });
         if (!tokenResponse.ok) {
             const errorData = await tokenResponse.text();
-            return server_1.NextResponse.json({ message: 'Failed to obtain admin token', status: tokenResponse.status, statusText: tokenResponse.statusText, error: errorData }, { status: tokenResponse.status });
+            return NextResponse.json({ message: 'Failed to obtain admin token', status: tokenResponse.status, statusText: tokenResponse.statusText, error: errorData }, { status: tokenResponse.status });
         }
         const tokenData = await tokenResponse.json();
         const accessToken = tokenData.access_token;
@@ -97,15 +94,15 @@ async function POST(request) {
         if (createUserResponse.status === 201) {
             const location = createUserResponse.headers.get('Location');
             const userId = location ? location.substring(location.lastIndexOf('/') + 1) : 'unknown';
-            return server_1.NextResponse.json({ message: 'User created successfully in Keycloak', userId: userId }, { status: 201 });
+            return NextResponse.json({ message: 'User created successfully in Keycloak', userId: userId }, { status: 201 });
         }
         else {
             const errorData = await createUserResponse.text();
-            return server_1.NextResponse.json({ message: 'Failed to create user in Keycloak', status: createUserResponse.status, statusText: createUserResponse.statusText, error: errorData }, { status: createUserResponse.status });
+            return NextResponse.json({ message: 'Failed to create user in Keycloak', status: createUserResponse.status, statusText: createUserResponse.statusText, error: errorData }, { status: createUserResponse.status });
         }
     }
     catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
-        return server_1.NextResponse.json({ message: 'An error occurred while processing webhook data', error: errorMessage }, { status: 500 });
+        return NextResponse.json({ message: 'An error occurred while processing webhook data', error: errorMessage }, { status: 500 });
     }
 }

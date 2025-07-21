@@ -4,9 +4,9 @@
     "noEmit": false,
     "outDir": "./dist",
     "rootDir": "./src",
-    "module": "ESNext",
+    "module": "NodeNext",
     "moduleResolution": "NodeNext"
   },
-  "include": ["src/scripts/**/*.ts", "src/app/**/*.ts"],
+  "include": ["src/scripts/**/*.ts"],
   "exclude": ["node_modules"]
 }

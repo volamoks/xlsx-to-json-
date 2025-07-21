@@ -1,13 +1,12 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const googleapis_1 = require("googleapis");
-const dotenv_1 = require("dotenv");
-const path_1 = __importDefault(require("path"));
+import { google } from 'googleapis';
+import { config } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url'; // Import fileURLToPath
+// Define __filename and __dirname for ES modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 // Load environment variables from .env file
-(0, dotenv_1.config)({ path: path_1.default.resolve(__dirname, '../../.env') });
+config({ path: path.resolve(__dirname, '../../.env') });
 const spreadsheetId = process.env.GOOGLE_SPREADSHEET_ID;
 const credentialsPath = process.env.GOOGLE_APPLICATION_CREDENTIALS;
 const keycloakUrl = process.env.KEYCLOAK_URL;
@@ -29,11 +28,11 @@ if (!keycloakUrl || !keycloakAdminUser || !keycloakAdminPassword) {
 async function syncUsers() {
     try {
         // Authenticate with Google Sheets API
-        const auth = new googleapis_1.google.auth.GoogleAuth({
-            keyFile: path_1.default.resolve(__dirname, `../../${credentialsPath}`),
+        const auth = new google.auth.GoogleAuth({
+            keyFile: path.resolve(__dirname, `../../${credentialsPath}`),
             scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
         });
-        const sheets = googleapis_1.google.sheets({ version: 'v4', auth });
+        const sheets = google.sheets({ version: 'v4', auth });
         // Read data from Google Sheet
         const response = await sheets.spreadsheets.values.get({
             spreadsheetId,
@@ -48,7 +47,7 @@ async function syncUsers() {
         const sheetDataRows = values.slice(1);
         console.log(`Found ${sheetDataRows.length} rows in the spreadsheet.`);
         // Obtain admin token from Keycloak
-        const tokenUrl = `${keycloakUrl}/realms/master/protocol/openid-connect/token`;
+        const tokenUrl = `${keycloakUrl}/realms/cde/protocol/openid-connect/token`;
         const tokenResponse = await fetch(tokenUrl, {
             method: 'POST',
             headers: {

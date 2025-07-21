@@ -28,6 +28,13 @@
           }
         ]
       }
+    ],
+    "actions": [
+      {
+        "type": "Action.OpenUrl",
+        "title": "Открыть файл для согласования",
+        "url": "#{fileUrl}"
+      }
     ]
   }
 }

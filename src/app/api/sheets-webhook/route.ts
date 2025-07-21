@@ -1,21 +1,6 @@
 import { NextResponse } from 'next/server';
 
-// Define a type for Keycloak user representation
-export interface KeycloakUserRepresentation {
-  username?: string;
-  email?: string;
-  firstName?: string;
-  lastName?: string;
-  enabled?: boolean;
-  id?: string; // Add id property
-  attributes?: {
-    [key: string]: string[] | undefined;
-  };
-  // Add other standard Keycloak user properties as needed
-  // emailVerified?: boolean;
-  // createdTimestamp?: number;
-  // ...
-}
+import { KeycloakUserRepresentation } from '../../../lib/interfaces/KeycloakUser';
 
 export async function POST(request: Request) {
   const keycloakUrl = process.env.KEYCLOAK_URL;

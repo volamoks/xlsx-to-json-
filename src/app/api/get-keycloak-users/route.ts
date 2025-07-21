@@ -36,7 +36,7 @@ export async function GET() {
     const accessToken = tokenData.access_token;
 
     // Fetch users using the admin token
-    const usersUrl = `${keycloakUrl}/admin/realms/${keycloakRealm}/users`;
+    const usersUrl = `${keycloakUrl}/admin/realms/${keycloakRealm}/users?first=0&amp;max=200`;
     const usersResponse = await fetch(usersUrl, {
       method: 'GET',
       headers: {

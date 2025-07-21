@@ -1,0 +1,40 @@
+[
+    {
+        "id": "initial_approval",
+        "description": "Первичный запрос на согласование",
+        "recipient": "approver1@example.com",
+        "subject": "Требуется согласование: #{fileName}",
+        "template": "initial_approval.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "approval_reminder",
+        "description": "Напоминание о согласовании",
+        "recipient": "approver1@example.com",
+        "subject": "Напоминание: Требуется согласование: #{fileName}",
+        "template": "reminder.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "final_report",
+        "description": "Финальный отчет для менеджера",
+        "recipient": "manager@example.com",
+        "subject": "Финальный отчет: #{fileName}",
+        "template": "final_report.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "icpu_check",
+        "description": "Отправка данных для проверки ICPU",
+        "recipient": "${EMAIL_TO_ICPU_CHEK}",
+        "subject": "Данные для проверки ICPU: #{fileName}",
+        "template": "final_report.html"
+    },
+    {
+        "id": "translation_request",
+        "description": "Отправка на перевод",
+        "recipient": "${EMAIL_TO_TRANSLATION}",
+        "subject": "Файл для перевода: #{fileName}",
+        "template": "initial_approval.html"
+    }
+]

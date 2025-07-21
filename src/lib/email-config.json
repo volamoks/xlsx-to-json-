@@ -1,0 +1,88 @@
+[
+    {
+        "id": "initial_approval",
+        "description": "Первичный запрос на согласование",
+        "recipients": {
+            "to": ["approver1@example.com"],
+            "cc": ["manager@example.com"],
+            "bcc": []
+        },
+        "subject": "Требуется согласование: #{fileName}",
+        "template": "initial_approval.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "approval_reminder",
+        "description": "Напоминание о согласовании",
+        "recipients": {
+            "to": ["approver1@example.com"],
+            "cc": ["manager@example.com"],
+            "bcc": []
+        },
+        "subject": "Напоминание: Требуется согласование: #{fileName}",
+        "template": "reminder.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "final_report",
+        "description": "Финальный отчет для менеджера",
+        "recipients": {
+            "to": ["manager@example.com"],
+            "cc": ["approver1@example.com"],
+            "bcc": []
+        },
+        "subject": "Финальный отчет: #{fileName}",
+        "template": "final_report.html",
+        "attachment": "public/temp_files/approval_for_folder_36.xlsx"
+    },
+    {
+        "id": "icpu_check",
+        "description": "Запрос на проверку ИКПУ кодов",
+        "recipients": {
+            "to": ["s.komalov@korzinka.uz "],
+            "cc": ["s.komalov@korzinka.uz "],
+            "bcc": []
+        },
+        "subject": "Данные для проверки ICPU: #{fileName}",
+        "template": "icpu_check.html"
+    },
+    {
+        "id": "translation_request",
+        "description": "Отправка на перевод",
+        "recipients": {
+            "to": ["t.djuraev@korzinka.uz"],
+            "cc": ["s.komalov@korzinka.uz"],
+            "bcc": []
+        },
+        "subject": "Файл для перевода: #{fileName}",
+        "template": "translation_request.html"
+    },
+    {
+        "id": "category_manager_notification",
+        "description": "Уведомление категорийного менеджера о статусе 2",
+        "category_mapping": {
+            "2": {
+                "to": ["s.komalov@korzinka.uz"],
+                "cc": ["s.komalov@korzinka.uz "],
+                "bcc": []
+            },
+            "6": {
+                "to": ["km6@example.com"],
+                "cc": ["supervisor6@example.com"],
+                "bcc": []
+            },
+            "11": {
+                "to": ["km11@example.com"],
+                "cc": ["supervisor11@example.com"],
+                "bcc": []
+            },
+            "12": {
+                "to": ["km12@example.com"],
+                "cc": ["supervisor12@example.com"],
+                "bcc": []
+            }
+        },
+        "subject": "Новые позиции для проверки в категории #{categoryName}",
+        "template": "category_manager_notification.html"
+    }
+]

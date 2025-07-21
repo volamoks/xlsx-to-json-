@@ -1,4 +1,4 @@
-import { testPostgresConnection } from '../app/lib/postgresClient';
+import { testPostgresConnection } from '../app/lib/postgresClient.js';
 
 async function runTest() {
     console.log('Testing PostgreSQL connection...');

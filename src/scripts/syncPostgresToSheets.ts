@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { JWT } from 'google-auth-library';
 import { config } from 'dotenv';
 import path from 'path';
-import { queryPostgres } from '../app/lib/postgresClient';
+import { queryPostgres } from '@/app/lib/postgresClient.js';
 
 // Load environment variables from .env file
 config({ path: path.resolve(__dirname, '../../.env') });
@@ -73,7 +73,7 @@ async function syncPostgresToSheets(sqlQuery: string, sheetName: string) {
 
     // Prepare headers from first row's keys
     const headers = Object.keys(data[0]);
-    const rows = data.map(row => headers.map(header => row[header]));
+    const rows = data.map((row: { [key: string]: string | number | boolean | Date | null }) => headers.map(header => row[header]));
 
     // Clear existing content
     await sheets.spreadsheets.values.clear({

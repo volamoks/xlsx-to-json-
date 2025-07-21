@@ -2,7 +2,7 @@ import { google } from 'googleapis';
 import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url'; // Import fileURLToPath
-import { KeycloakUserRepresentation } from '../app/api/sheets-webhook/route'; // Import the type
+import { KeycloakUserRepresentation } from '@/lib/interfaces/KeycloakUser.js'; // Import the type
 
 // Define __filename and __dirname for ES modules
 const __filename = fileURLToPath(import.meta.url);

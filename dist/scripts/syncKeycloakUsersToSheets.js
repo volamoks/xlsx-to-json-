@@ -1,32 +1,34 @@
-"use strict";
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-const googleapis_1 = require("googleapis");
-const google_auth_library_1 = require("google-auth-library");
-const dotenv_1 = require("dotenv");
-const path_1 = __importDefault(require("path"));
+import { google } from 'googleapis';
+import { GoogleAuth } from 'google-auth-library'; // Добавлен GoogleAuth
+import { config } from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 // Load environment variables from .env file
-(0, dotenv_1.config)({ path: path_1.default.resolve(__dirname, '../../.env') });
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+config({ path: path.resolve(__dirname, '../../.env') });
 const keycloakUrl = process.env.KEYCLOAK_URL;
-const keycloakAdminUser = process.env.KEYCLOAK_ADMIN_USER;
-const keycloakAdminPassword = process.env.KEYCLOAK_ADMIN_PASSWORD;
+const keycloakAdminUser = process.env.PROD_KEYCLOAK_ADMIN_USER; // Используем PROD-переменные
+const keycloakAdminPassword = process.env.PROD_KEYCLOAK_ADMIN_PASSWORD; // Используем PROD-переменные
 const googleSpreadsheetId = '1AF333V-HnymvXl4F1k4Vsqa8j7s9BnR5uV-D4MqTqS4'; // Updated Spreadsheet ID
 const googleSheetGid = 1663998069; // New Sheet GID
-const googleServiceAccountEmail = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL;
-const googlePrivateKey = process.env.GOOGLE_PRIVATE_KEY;
+// Удалены googleServiceAccountEmail и googlePrivateKey, так как они будут загружаться из файла
 if (!keycloakUrl || !keycloakAdminUser || !keycloakAdminPassword) {
     console.error('Error: Missing Keycloak admin environment variables in .env file');
     process.exit(1);
 }
-if (!googleSpreadsheetId || !googleSheetGid || !googleServiceAccountEmail || !googlePrivateKey) {
-    console.error('Error: Missing Google Sheets environment variables in .env file');
+console.log('Keycloak URL:', keycloakUrl);
+console.log('Keycloak Admin User:', keycloakAdminUser);
+console.log('Keycloak Admin Password (first 5 chars):', keycloakAdminPassword ? keycloakAdminPassword.substring(0, 5) + '...' : 'N/A');
+console.log('Keycloak Realm for Token:', process.env.KEYCLOAK_REALM || 'master');
+// Проверка только googleSpreadsheetId и googleSheetGid, так как учетные данные будут из файла
+if (!googleSpreadsheetId || !googleSheetGid) {
+    console.error('Error: Missing Google Sheets environment variables (Spreadsheet ID or Sheet GID) in .env file');
     process.exit(1);
 }
 async function syncKeycloakUsersToSheets() {
     var _a, _b, _c, _d, _e, _f;
-    const masterRealm = process.env.KEYCLOAK_REALM || 'master'; // Get master realm from env or default
+    const masterRealm = 'master'; // Всегда используем 'master' Realm для получения административного токена
     const tokenUrl = `${keycloakUrl}/realms/${masterRealm}/protocol/openid-connect/token`; // Get token from master realm
     try {
         // Obtain admin token from Keycloak
@@ -39,7 +41,7 @@ async function syncKeycloakUsersToSheets() {
                 grant_type: 'password',
                 username: keycloakAdminUser,
                 password: keycloakAdminPassword,
-                client_id: 'admin-cli', // Assuming 'admin-cli' is the correct client_id for obtaining an admin token
+                client_id: 'admin-cli', // Возвращено на 'admin-cli'
             }).toString(),
         });
         if (!tokenResponse.ok) {
@@ -110,6 +112,7 @@ async function syncKeycloakUsersToSheets() {
             'Enabled', 'Email Verified', 'Created Timestamp', 'Last Login',
             'TIN', 'Notif Lang', 'Category', // Changed 'Categories' to 'Category'
             'Supplier', 'Telegram Destin', 'Roles', // Added Roles header
+            'Notif Teams Destin', 'Business Units', 'Phone Number', // Added new headers
             // Add any other headers you expect based on user attributes or top-level fields
         ];
         rowsToWrite.push(headers); // Add headers as the first row
@@ -123,10 +126,11 @@ async function syncKeycloakUsersToSheets() {
                 console.warn(`Skipping user without ID: ${user.username || user.email}`);
                 continue; // Skip user if ID is missing
             }
-            // Fetch role mappings for the user
+            // Fetch effective role mappings for the user to include inherited roles
             let userRoles = [];
             try {
-                const roleMappingsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/users/${userId}/role-mappings`;
+                // This endpoint returns all effective realm roles, including those inherited from composites.
+                const roleMappingsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/users/${userId}/role-mappings/realm/composite`;
                 const roleMappingsResponse = await fetch(roleMappingsUrl, {
                     method: 'GET',
                     headers: {
@@ -135,20 +139,47 @@ async function syncKeycloakUsersToSheets() {
                     },
                 });
                 if (roleMappingsResponse.ok) {
-                    const roleMappingsData = await roleMappingsResponse.json();
-                    // Extract realm roles (adjust if you need client roles)
-                    if (roleMappingsData.realmMappings) {
-                        userRoles = roleMappingsData.realmMappings.map((role) => role.name);
+                    const effectiveRoles = await roleMappingsResponse.json();
+                    // The response is an array of role representations
+                    if (Array.isArray(effectiveRoles)) {
+                        userRoles = effectiveRoles.map((role) => role.name);
                     }
                 }
                 else {
-                    console.warn(`Failed to fetch roles for user ${userId}: ${roleMappingsResponse.status}`);
+                    console.warn(`Failed to fetch effective roles for user ${userId}: ${roleMappingsResponse.status}`);
                 }
             }
             catch (roleError) {
-                console.error(`Error fetching roles for user ${userId}:`, roleError);
+                console.error(`Error fetching effective roles for user ${userId}:`, roleError);
             }
             const rolesString = userRoles.join(', '); // Join roles into a string
+            console.log(`DEBUG: User ${userId} has roles: ${rolesString || 'NONE'}`);
+            // Fetch last login time from user events
+            let lastLoginTimestamp;
+            try {
+                // Query for the most recent LOGIN event for the user
+                const eventsUrl = `${keycloakUrl}/admin/realms/${cdeRealm}/events?type=LOGIN&user=${userId}&max=1&first=0`;
+                const eventsResponse = await fetch(eventsUrl, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (eventsResponse.ok) {
+                    const eventsData = await eventsResponse.json();
+                    if (eventsData && eventsData.length > 0) {
+                        // The first event (max=1) should be the latest LOGIN event
+                        lastLoginTimestamp = eventsData[0].time;
+                    }
+                }
+                else {
+                    console.warn(`Failed to fetch LOGIN events for user ${userId}: ${eventsResponse.status} ${await eventsResponse.text()}`);
+                }
+            }
+            catch (eventError) {
+                console.error(`Error fetching LOGIN events for user ${userId}:`, eventError);
+            }
             const baseRowData = [
                 userId, // Use the validated userId
                 user.username || '',
@@ -158,7 +189,7 @@ async function syncKeycloakUsersToSheets() {
                 user.enabled !== undefined ? user.enabled : '',
                 user.emailVerified !== undefined ? user.emailVerified : '',
                 user.createdTimestamp ? new Date(user.createdTimestamp).toISOString() : '',
-                user.lastLogin ? new Date(user.lastLogin).toISOString() : '',
+                lastLoginTimestamp ? new Date(lastLoginTimestamp).toLocaleString('en-US', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false, timeZone: 'Asia/Tashkent' }).replace(',', '') : '', // Format as YYYY-MM-DD HH:mm:ss in Tashkent time zone
             ];
             const attributes = user.attributes || {};
             // Extract attributes, assuming single values for these unless specified otherwise
@@ -189,12 +220,12 @@ async function syncKeycloakUsersToSheets() {
             });
         } // End of for...of loop
         // Initialize Google Sheets client using googleapis
-        const auth = new google_auth_library_1.JWT({
-            email: googleServiceAccountEmail,
-            key: googlePrivateKey.replace(/\\n/g, '\n'), // Replace escaped newlines
+        // Используем GoogleAuth для загрузки учетных данных из файла
+        const auth = new GoogleAuth({
+            keyFile: path.resolve(__dirname, '../../google.json'), // Путь к файлу google.json
             scopes: ['https://www.googleapis.com/auth/spreadsheets'],
         });
-        const sheets = googleapis_1.google.sheets({ version: 'v4', auth });
+        const sheets = google.sheets({ version: 'v4', auth });
         // Get sheet name from GID (requires fetching spreadsheet details)
         const spreadsheet = await sheets.spreadsheets.get({
             spreadsheetId: googleSpreadsheetId,
@@ -243,4 +274,8 @@ async function syncKeycloakUsersToSheets() {
         process.exit(1);
     }
 }
-syncKeycloakUsersToSheets();
+// Execute main only if the script is run directly from the command line
+if (require.main === module) {
+    syncKeycloakUsersToSheets();
+}
+export { syncKeycloakUsersToSheets };
