@@ -156,11 +156,11 @@ async function getGoogleSpreadsheetDoc(spreadsheetId: string): Promise<GoogleSpr
 
 function formatDateSafely(dateValue: unknown): string {
     if (!dateValue) return '';
-    
+
     try {
         // Handle different date formats from database
         let date: Date;
-        
+
         if (dateValue instanceof Date) {
             date = dateValue;
         } else if (typeof dateValue === 'string') {
@@ -172,19 +172,19 @@ function formatDateSafely(dateValue: unknown): string {
         } else {
             return String(dateValue);
         }
-        
+
         // Check if date is valid
         if (isNaN(date.getTime())) {
             console.warn(`Invalid date value: ${dateValue}`);
             return String(dateValue);
         }
-        
+
         // Format to Russian locale with date and time
-        return date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', { 
-            hour: '2-digit', 
-            minute: '2-digit' 
+        return date.toLocaleDateString('ru-RU') + ' ' + date.toLocaleTimeString('ru-RU', {
+            hour: '2-digit',
+            minute: '2-digit'
         });
-        
+
     } catch (error) {
         console.warn(`Error formatting date ${dateValue}:`, error);
         return String(dateValue);

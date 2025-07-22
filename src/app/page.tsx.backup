@@ -12,24 +12,22 @@ const Home: React.FC = () => {
     } | null>(null);
     const [error, setError] = useState<string | null>(null);
     const [logOutput, setLogOutput] = useState<string>('');
-    const [isExporting, setIsExporting] = useState<boolean>(false);
-    const [isImporting, setIsImporting] = useState<boolean>(false);
-    const [isExportingToGoogleSheet, setIsExportingToGoogleSheet] = useState<boolean>(false);
+    const [isExporting, setIsExporting] = useState<boolean>(false); // For Keycloak to Sheet
+    const [isImporting, setIsImporting] = useState<boolean>(false); // For Sheet to Keycloak
+    const [isExportingToGoogleSheet, setIsExportingToGoogleSheet] = useState<boolean>(false); // For DB to Google Sheet
     const [isCheckingSheet, setIsCheckingSheet] = useState<boolean>(false);
     const [isGeneratingExcel, setIsGeneratingExcel] = useState<boolean>(false);
     const [excelFolderId, setExcelFolderId] = useState<string>('');
     const [isTriggeringFlow, setIsTriggeringFlow] = useState<boolean>(false);
     const [isSendingEmail, setIsSendingEmail] = useState<boolean>(false);
     const [selectedScenarioId, setSelectedScenarioId] = useState<string>(emailConfig[0]?.id || '');
-    const [isSendingCategoryNotification, setIsSendingCategoryNotification] =
-        useState<boolean>(false);
+    const [isSendingCategoryNotification, setIsSendingCategoryNotification] = useState<boolean>(false);
     const [isSendingKamNotification, setIsSendingKamNotification] = useState<boolean>(false);
-    const [isSendingListingNotification, setIsSendingListingNotification] =
-        useState<boolean>(false);
+    const [isSendingListingNotification, setIsSendingListingNotification] = useState<boolean>(false);
     const [selectedCategoryId, setSelectedCategoryId] = useState<string>('2');
-    const [isTestMode, setIsTestMode] = useState<boolean>(false);
 
     const handleFileLoaded = async (data: ArrayBuffer) => {
+        // Ensure processData is called with the correct sourceType for client-side file processing
         const result = await processData(data, 'file');
         if ('error' in result) {
             setError(result.error || 'An unknown error occurred during file processing.');
@@ -50,7 +48,7 @@ const Home: React.FC = () => {
         setLogOutput(
             `Starting ${operationType
                 .toLowerCase()
-                .replace('togooglesheet', ' to Google Sheet')}...\\n`,
+                .replace('togooglesheet', ' to Google Sheet')}...\n`,
         );
 
         try {
@@ -71,13 +69,13 @@ const Home: React.FC = () => {
                     setLogOutput(prev => prev + decoder.decode(value, { stream: true }));
                 }
             }
-            setLogOutput(prev => prev + `\\n${operationType} process finished.\\n`);
+            setLogOutput(prev => prev + `\n${operationType} process finished.\n`);
         } catch (e: unknown) {
             const message =
                 e instanceof Error
                     ? e.message
                     : `An unknown error occurred during ${operationType.toLowerCase()}.`;
-            setLogOutput(prev => prev + `\\n${operationType.toUpperCase()}_ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `\n${operationType.toUpperCase()}_ERROR: ${message}\n`);
         } finally {
             if (operationType === 'Export') setIsExporting(false);
             if (operationType === 'Import') setIsImporting(false);
@@ -87,17 +85,17 @@ const Home: React.FC = () => {
 
     const handleCheckSheet = async () => {
         setIsCheckingSheet(true);
-        setLogOutput(prev => prev + '\\nStarting to check sheet for triggers...\\n');
+        setLogOutput(prev => prev + '\nStarting to check sheet for triggers...\n');
         try {
             const response = await fetch('/api/check-sheet', { method: 'POST' });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
-            setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
-            setLogOutput(prev => prev + `ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         } finally {
             setIsCheckingSheet(false);
         }
@@ -105,12 +103,12 @@ const Home: React.FC = () => {
 
     const handleGenerateExcel = async () => {
         if (!excelFolderId || isNaN(parseInt(excelFolderId, 10))) {
-            setLogOutput(prev => prev + '\\nPlease enter a valid Folder ID for Excel generation.\\n');
+            setLogOutput(prev => prev + '\nPlease enter a valid Folder ID for Excel generation.\n');
             return;
         }
         setIsGeneratingExcel(true);
         setLogOutput(
-            prev => prev + `\\nGenerating download link for Folder ID: ${excelFolderId}...\\n`,
+            prev => prev + `\nGenerating download link for Folder ID: ${excelFolderId}...\n`,
         );
         try {
             const response = await fetch('/api/generate-excel', {
@@ -122,10 +120,10 @@ const Home: React.FC = () => {
             if (!response.ok) {
                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
-            setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
-            setLogOutput(prev => prev + `ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         } finally {
             setIsGeneratingExcel(false);
         }
@@ -133,17 +131,17 @@ const Home: React.FC = () => {
 
     const handleTriggerFlow = async () => {
         setIsTriggeringFlow(true);
-        setLogOutput(prev => prev + '\\nTriggering Power Automate flow with Excel file...\\n');
+        setLogOutput(prev => prev + '\nTriggering Power Automate flow with Excel file...\n');
         try {
             const response = await fetch('/api/trigger-flow', { method: 'POST' });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
-            setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
-            setLogOutput(prev => prev + `ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         } finally {
             setIsTriggeringFlow(false);
         }
@@ -151,89 +149,112 @@ const Home: React.FC = () => {
 
     const handleSendEmail = async (scenarioId: string) => {
         if (!scenarioId) {
-            setLogOutput(prev => prev + '\\nPlease provide a scenario ID.\\n');
+            setLogOutput(prev => prev + '\nPlease provide a scenario ID.\n');
             return;
         }
         setIsSendingEmail(true);
         const scenario = emailConfig.find(s => s.id === scenarioId);
-        const testPrefix = isTestMode ? '[TEST MODE] ' : '';
         setLogOutput(
-            prev => prev + `\\n${testPrefix}Sending email for scenario: "${scenario?.description}"...\\n`,
+            prev => prev + `\nSending email for scenario: "${scenario?.description}"...\n`,
         );
         try {
             const response = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    scenarioId,
-                    testMode: isTestMode
-                }),
+                body: JSON.stringify({ scenarioId }),
             });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
-            setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
-            setLogOutput(prev => prev + `ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         } finally {
             setIsSendingEmail(false);
         }
     };
 
-    const handleSendNotification = async (statusId: string | number, categoryId?: string) => {
-        const setLoading = (loading: boolean) => {
-            switch (statusId.toString()) {
-                case '0':
-                case '5':
-                    setIsSendingKamNotification(loading);
-                    break;
-                case '2':
-                    setIsSendingCategoryNotification(loading);
-                    break;
-                case '7':
-                    setIsSendingListingNotification(loading);
-                    break;
-            }
-        };
-
-        setLoading(true);
-        const testPrefix = isTestMode ? '[TEST MODE] ' : '';
-        const statusName = getStatusName(statusId.toString());
-        setLogOutput(prev => prev + `\\n${testPrefix}Sending notification for status ${statusId} (${statusName})${categoryId ? ` for category ${categoryId}` : ''}...\\n`);
+    const handleSendCategoryNotification = async (categoryId: string) => {
+        setIsSendingCategoryNotification(true);
+        setLogOutput(
+            prev =>
+                prev + `\nSending category manager notification for category ${categoryId}...\n`,
+        );
 
         try {
-            const response = await fetch('/api/send-notification', {
+            const response = await fetch('/api/send-email', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    statusId: parseInt(statusId.toString()),
-                    categoryId: categoryId ? parseInt(categoryId, 10) : undefined,
-                    testMode: isTestMode
+                    scenarioId: 'category_manager_notification',
+                    categoryId: parseInt(categoryId, 10),
                 }),
             });
             const result = await response.json();
             if (!response.ok) {
                 throw new Error(result.error || `HTTP error! status: ${response.status}`);
             }
-            setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
         } catch (e: unknown) {
             const message = e instanceof Error ? e.message : 'An unknown error occurred.';
-            setLogOutput(prev => prev + `ERROR: ${message}\\n`);
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         }
 
-        setLoading(false);
+        setIsSendingCategoryNotification(false);
     };
 
-    const getStatusName = (statusId: string): string => {
-        switch (statusId) {
-            case '0': return 'Отклонена';
-            case '2': return 'Требует проверки КМ';
-            case '5': return 'Требует доработки';
-            case '7': return 'Готово к листингу';
-            default: return 'Неизвестный статус';
+    const handleSendKamNotification = async (categoryId: string) => {
+        setIsSendingKamNotification(true);
+        setLogOutput(prev => prev + `\nSending KAM notification for category ${categoryId}...\n`);
+
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scenarioId: 'kam_notification',
+                    categoryId: parseInt(categoryId, 10),
+                }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP error! status: ${response.status}`);
+            }
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : 'An unknown error occurred.';
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
         }
+
+        setIsSendingKamNotification(false);
+    };
+
+    const handleSendListingNotification = async (categoryId: string) => {
+        setIsSendingListingNotification(true);
+        setLogOutput(prev => prev + `\nSending Listing notification for category ${categoryId}...\n`);
+
+        try {
+            const response = await fetch('/api/send-email', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    scenarioId: 'listing_notification',
+                    categoryId: parseInt(categoryId, 10),
+                }),
+            });
+            const result = await response.json();
+            if (!response.ok) {
+                throw new Error(result.error || `HTTP error! status: ${response.status}`);
+            }
+            setLogOutput(prev => prev + `SUCCESS: ${result.message}\n`);
+        } catch (e: unknown) {
+            const message = e instanceof Error ? e.message : 'An unknown error occurred.';
+            setLogOutput(prev => prev + `ERROR: ${message}\n`);
+        }
+
+        setIsSendingListingNotification(false);
     };
 
     return (
@@ -254,24 +275,20 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">KeyCloak & Database Operations</h2>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <h3 className="font-semibold text-blue-800 mb-2">KeyCloak Operations</h3>
                         <div className="space-y-2">
                             <button
-                                onClick={() =>
-                                    handleStreamedOperation('/api/export-keycloak-sheet', 'Export')
-                                }
+                                onClick={() => handleStreamedOperation('/api/export-keycloak-sheet', 'Export')}
                                 disabled={isExporting || isImporting}
                                 className="w-full bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50"
                             >
                                 {isExporting ? 'Exporting...' : 'Export from KeyCloak'}
                             </button>
                             <button
-                                onClick={() =>
-                                    handleStreamedOperation('/api/import-keycloak-sheet', 'Import')
-                                }
+                                onClick={() => handleStreamedOperation('/api/import-keycloak-sheet', 'Import')}
                                 disabled={isExporting || isImporting}
                                 className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50"
                             >
@@ -284,18 +301,8 @@ const Home: React.FC = () => {
                         <h3 className="font-semibold text-teal-800 mb-2">Database Operations</h3>
                         <div className="space-y-2">
                             <button
-                                onClick={() =>
-                                    handleStreamedOperation(
-                                        '/api/export-sheet',
-                                        'ExportToGoogleSheet',
-                                    )
-                                }
-                                disabled={
-                                    isExporting ||
-                                    isImporting ||
-                                    isExportingToGoogleSheet ||
-                                    isCheckingSheet
-                                }
+                                onClick={() => handleStreamedOperation('/api/export-sheet', 'ExportToGoogleSheet')}
+                                disabled={isExporting || isImporting || isExportingToGoogleSheet || isCheckingSheet}
                                 className="w-full bg-teal-500 hover:bg-teal-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50"
                             >
                                 {isExportingToGoogleSheet ? 'Exporting...' : 'Export DB to Sheet'}
@@ -323,7 +330,7 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Excel & Power Automate Operations</h2>
-
+                
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
                         <h3 className="font-semibold text-orange-800 mb-2">Excel Generation</h3>
@@ -362,7 +369,7 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-4">Direct Email Operations</h2>
-
+                
                 <div className="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
                     <h3 className="font-semibold text-emerald-800 mb-3">Send Emails</h3>
                     <div className="flex flex-wrap gap-2">
@@ -373,10 +380,7 @@ const Home: React.FC = () => {
                                 className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm"
                             >
                                 {emailConfig.map(scenario => (
-                                    <option
-                                        key={scenario.id}
-                                        value={scenario.id}
-                                    >
+                                    <option key={scenario.id} value={scenario.id}>
                                         {scenario.description}
                                     </option>
                                 ))}
@@ -390,14 +394,14 @@ const Home: React.FC = () => {
                             </button>
                         </div>
                         <button
-                            onClick={() => handleSendNotification(7)} // ICPU will be configured in Mails sheet with xlsx_template='icpu'
+                            onClick={() => handleSendEmail('icpu_check')}
                             disabled={isSendingEmail}
                             className="bg-sky-500 hover:bg-sky-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50"
                         >
                             {isSendingEmail ? 'Sending...' : 'ICPU Check'}
                         </button>
                         <button
-                            onClick={() => handleSendNotification(7)} // Translation will be configured in Mails sheet with xlsx_template='translation'
+                            onClick={() => handleSendEmail('translation_request')}
                             disabled={isSendingEmail}
                             className="bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50"
                         >
@@ -411,63 +415,35 @@ const Home: React.FC = () => {
 
             <div className="mt-8">
                 <h2 className="text-xl font-semibold mb-6">Уведомления по категориям</h2>
-
+                
+                {/* Единый выбор категории */}
                 <div className="bg-blue-50 p-4 rounded-lg mb-6">
-                    <h3 className="text-lg font-medium mb-3">Настройки уведомлений</h3>
-                    <div className="space-y-3">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Номер категории</label>
-                            <input
-                                type="text"
-                                value={selectedCategoryId}
-                                onChange={e => setSelectedCategoryId(e.target.value)}
-                                placeholder="Введите номер категории (например: 2, 6, 11...)"
-                                className="border border-gray-300 rounded-lg px-4 py-2 bg-white min-w-96"
-                                disabled={
-                                    isSendingCategoryNotification ||
-                                    isSendingKamNotification ||
-                                    isSendingListingNotification
-                                }
-                            />
-                        </div>
-                        <div className="flex items-center space-x-3">
-                            <input
-                                type="checkbox"
-                                id="testMode"
-                                checked={isTestMode}
-                                onChange={e => setIsTestMode(e.target.checked)}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                                disabled={
-                                    isSendingCategoryNotification ||
-                                    isSendingKamNotification ||
-                                    isSendingListingNotification
-                                }
-                            />
-                            <label htmlFor="testMode" className="text-sm font-medium text-gray-700">
-                                🧪 Тестовый режим (отправить себе в копию вместо реальных получателей)
-                            </label>
-                        </div>
-                    </div>
+                    <h3 className="text-lg font-medium mb-3">Выбор категории</h3>
+                    <select
+                        value={selectedCategoryId}
+                        onChange={e => setSelectedCategoryId(e.target.value)}
+                        className="border border-gray-300 rounded-lg px-4 py-2 bg-white min-w-48"
+                        disabled={isSendingCategoryNotification || isSendingKamNotification || isSendingListingNotification}
+                    >
+                        <option value="2">Категория 2</option>
+                        <option value="6">Категория 6</option>
+                        <option value="11">Категория 11</option>
+                        <option value="12">Категория 12</option>
+                        <option value="15">Категория 15</option>
+                        <option value="16">Категория 16</option>
+                        <option value="20">Категория 20</option>
+                        <option value="21">Категория 21</option>
+                        <option value="28">Категория 28</option>
+                    </select>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <h4 className="font-semibold text-gray-800 mb-2">Отклонено</h4>
-                        <p className="text-sm text-gray-600 mb-3">Статус 0 - заявка отклонена</p>
-                        <button
-                            onClick={() => handleSendNotification(0, selectedCategoryId)}
-                            disabled={isSendingKamNotification}
-                            className="w-full bg-gray-500 hover:bg-gray-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isSendingKamNotification ? 'Отправка...' : 'КАМ об отклонении'}
-                        </button>
-                    </div>
-
+                {/* Кнопки уведомлений */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
                         <h4 className="font-semibold text-amber-800 mb-2">Category Manager</h4>
                         <p className="text-sm text-amber-600 mb-3">Статус 2 - требует проверки</p>
                         <button
-                            onClick={() => handleSendNotification(2, selectedCategoryId)}
+                            onClick={() => handleSendCategoryNotification(selectedCategoryId)}
                             disabled={isSendingCategoryNotification}
                             className="w-full bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -479,11 +455,11 @@ const Home: React.FC = () => {
                         <h4 className="font-semibold text-red-800 mb-2">KAM</h4>
                         <p className="text-sm text-red-600 mb-3">Статус 5 - требует доработки</p>
                         <button
-                            onClick={() => handleSendNotification(5, selectedCategoryId)}
+                            onClick={() => handleSendKamNotification(selectedCategoryId)}
                             disabled={isSendingKamNotification}
                             className="w-full bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {isSendingKamNotification ? 'Отправка...' : 'КАМ о доработке'}
+                            {isSendingKamNotification ? 'Отправка...' : 'Отправить КАМ'}
                         </button>
                     </div>
 
@@ -491,7 +467,7 @@ const Home: React.FC = () => {
                         <h4 className="font-semibold text-green-800 mb-2">Листинг</h4>
                         <p className="text-sm text-green-600 mb-3">Статус 7 - готово к листингу</p>
                         <button
-                            onClick={() => handleSendNotification(7, selectedCategoryId)}
+                            onClick={() => handleSendListingNotification(selectedCategoryId)}
                             disabled={isSendingListingNotification}
                             className="w-full bg-green-500 hover:bg-green-600 text-white font-semibold py-2 px-4 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
@@ -500,87 +476,23 @@ const Home: React.FC = () => {
                     </div>
                 </div>
 
+                {/* Кнопки отладки в компактном виде */}
                 <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-                    <h4 className="text-sm font-medium text-gray-700 mb-2">Отладка и настройка</h4>
+                    <h4 className="text-sm font-medium text-gray-700 mb-2">Отладка</h4>
                     <div className="flex flex-wrap gap-2">
                         <button
                             onClick={async () => {
-                                setLogOutput(prev => prev + '\\nНастройка листа Mails...\\n');
-                                try {
-                                    const response = await fetch('/api/setup-mails-sheet', { method: 'POST' });
-                                    const result = await response.json();
-                                    if (response.ok) {
-                                        setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
-                                        if (result.sheetUrl) {
-                                            setLogOutput(prev => prev + `Ссылка: ${result.sheetUrl}\\n`);
-                                        }
-                                    } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
-                                    }
-                                } catch (error) {
-                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\\n`);
-                                }
-                            }}
-                            className="bg-blue-500 hover:bg-blue-600 text-white text-sm py-1 px-3 rounded"
-                        >
-                            📋 Настроить лист Mails
-                        </button>
-                        <button
-                            onClick={async () => {
-                                setLogOutput(prev => prev + '\\nТестирование динамической системы уведомлений...\\n');
-                                try {
-                                    const response = await fetch('/api/send-notification', {
-                                        method: 'POST',
-                                        headers: { 'Content-Type': 'application/json' },
-                                        body: JSON.stringify({
-                                            statusId: 2,
-                                            categoryId: 6,
-                                            testMode: true
-                                        })
-                                    });
-                                    const result = await response.json();
-                                    if (response.ok) {
-                                        setLogOutput(prev => prev + `SUCCESS: ${result.message}\\n`);
-                                    } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
-                                    }
-                                } catch (error) {
-                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\\n`);
-                                }
-                            }}
-                            className="bg-purple-500 hover:bg-purple-600 text-white text-sm py-1 px-3 rounded"
-                        >
-                            🧪 Тест системы
-                        </button>
-                        <button
-                            onClick={async () => {
-                                setLogOutput(
-                                    prev => prev + '\\nChecking available Google Sheets...\\n',
-                                );
+                                setLogOutput(prev => prev + '\nChecking available Google Sheets...\n');
                                 try {
                                     const response = await fetch('/api/debug-sheets');
                                     const result = await response.json();
                                     if (response.ok) {
-                                        setLogOutput(
-                                            prev =>
-                                                prev +
-                                                `Available sheets: ${result.availableSheets.join(
-                                                    ', ',
-                                                )}\\n`,
-                                        );
+                                        setLogOutput(prev => prev + `Available sheets: ${result.availableSheets.join(', ')}\n`);
                                     } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
+                                        setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                     }
                                 } catch (error) {
-                                    setLogOutput(
-                                        prev =>
-                                            prev +
-                                            `ERROR: ${
-                                                error instanceof Error
-                                                    ? error.message
-                                                    : 'Unknown error'
-                                            }\\n`,
-                                    );
+                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
                                 }
                             }}
                             className="bg-slate-500 hover:bg-slate-600 text-white text-sm py-1 px-3 rounded"
@@ -589,29 +501,17 @@ const Home: React.FC = () => {
                         </button>
                         <button
                             onClick={async () => {
-                                setLogOutput(prev => prev + '\\nChecking sheet data...\\n');
+                                setLogOutput(prev => prev + '\nChecking sheet data...\n');
                                 try {
                                     const response = await fetch('/api/debug-sheet-data');
                                     const result = await response.json();
                                     if (response.ok) {
-                                        setLogOutput(
-                                            prev =>
-                                                prev +
-                                                `Total rows: ${result.totalRows}, Status 2 count: ${result.summary.status2Count}\\n`,
-                                        );
+                                        setLogOutput(prev => prev + `Total rows: ${result.totalRows}, Status 2 count: ${result.summary.status2Count}\n`);
                                     } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
+                                        setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                     }
                                 } catch (error) {
-                                    setLogOutput(
-                                        prev =>
-                                            prev +
-                                            `ERROR: ${
-                                                error instanceof Error
-                                                    ? error.message
-                                                    : 'Unknown error'
-                                            }\\n`,
-                                    );
+                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
                                 }
                             }}
                             className="bg-gray-500 hover:bg-gray-600 text-white text-sm py-1 px-3 rounded"
@@ -620,27 +520,17 @@ const Home: React.FC = () => {
                         </button>
                         <button
                             onClick={async () => {
-                                setLogOutput(prev => prev + '\\nChecking KM email logs...\\n');
+                                setLogOutput(prev => prev + '\nChecking KM email logs...\n');
                                 try {
-                                    const response = await fetch(
-                                        '/api/email-logs?scenario=category_manager_notification',
-                                    );
+                                    const response = await fetch('/api/email-logs?scenario=category_manager_notification');
                                     const result = await response.json();
                                     if (response.ok) {
-                                        setLogOutput(prev => prev + `КМ emails: ${result.count}\\n`);
+                                        setLogOutput(prev => prev + `КМ emails: ${result.count}\n`);
                                     } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
+                                        setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                     }
                                 } catch (error) {
-                                    setLogOutput(
-                                        prev =>
-                                            prev +
-                                            `ERROR: ${
-                                                error instanceof Error
-                                                    ? error.message
-                                                    : 'Unknown error'
-                                            }\\n`,
-                                    );
+                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
                                 }
                             }}
                             className="bg-amber-500 hover:bg-amber-600 text-white text-sm py-1 px-3 rounded"
@@ -649,29 +539,17 @@ const Home: React.FC = () => {
                         </button>
                         <button
                             onClick={async () => {
-                                setLogOutput(prev => prev + '\\nChecking KAM email logs...\\n');
+                                setLogOutput(prev => prev + '\nChecking KAM email logs...\n');
                                 try {
-                                    const response = await fetch(
-                                        '/api/email-logs?scenario=kam_notification',
-                                    );
+                                    const response = await fetch('/api/email-logs?scenario=kam_notification');
                                     const result = await response.json();
                                     if (response.ok) {
-                                        setLogOutput(
-                                            prev => prev + `КАМ emails: ${result.count}\\n`,
-                                        );
+                                        setLogOutput(prev => prev + `КАМ emails: ${result.count}\n`);
                                     } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
+                                        setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                     }
                                 } catch (error) {
-                                    setLogOutput(
-                                        prev =>
-                                            prev +
-                                            `ERROR: ${
-                                                error instanceof Error
-                                                    ? error.message
-                                                    : 'Unknown error'
-                                            }\\n`,
-                                    );
+                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
                                 }
                             }}
                             className="bg-red-500 hover:bg-red-600 text-white text-sm py-1 px-3 rounded"
@@ -680,38 +558,26 @@ const Home: React.FC = () => {
                         </button>
                         <button
                             onClick={async () => {
-                                setLogOutput(prev => prev + '\\nChecking Listing email logs...\\n');
+                                setLogOutput(prev => prev + '\nChecking Listing email logs...\n');
                                 try {
-                                    const response = await fetch(
-                                        '/api/email-logs?scenario=listing_notification',
-                                    );
+                                    const response = await fetch('/api/email-logs?scenario=listing_notification');
                                     const result = await response.json();
                                     if (response.ok) {
-                                        setLogOutput(
-                                            prev => prev + `Листинг emails: ${result.count}\\n`,
-                                        );
+                                        setLogOutput(prev => prev + `Листинг emails: ${result.count}\n`);
                                     } else {
-                                        setLogOutput(prev => prev + `ERROR: ${result.error}\\n`);
+                                        setLogOutput(prev => prev + `ERROR: ${result.error}\n`);
                                     }
                                 } catch (error) {
-                                    setLogOutput(
-                                        prev =>
-                                            prev +
-                                            `ERROR: ${
-                                                error instanceof Error
-                                                    ? error.message
-                                                    : 'Unknown error'
-                                            }\\n`,
-                                    );
+                                    setLogOutput(prev => prev + `ERROR: ${error instanceof Error ? error.message : 'Unknown error'}\n`);
                                 }
                             }}
                             className="bg-green-500 hover:bg-green-600 text-white text-sm py-1 px-3 rounded"
                         >
                             История Листинг
                         </button>
-                    </div>
                 </div>
             </div>
+
         </div>
     );
 };

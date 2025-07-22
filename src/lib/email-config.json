@@ -95,5 +95,16 @@
         },
         "subject": "Заявка требует доработки - #{positionsCount} позиций",
         "template": "kam_notification.html"
+    },
+    {
+        "id": "listing_notification",
+        "description": "Уведомление отдела листинга о готовых позициях (статус 7)",
+        "recipients": {
+            "to": ["s.komalov@korzinka.uz"],
+            "cc": [],
+            "bcc": []
+        },
+        "subject": "Новые позиции готовы для листинга - #{positionsCount} позиций",
+        "template": "listing_notification.html"
     }
 ]
